@@ -36,3 +36,9 @@ Heinrich Küttler*
 ### 
 
 [hogwild!](https://qiita.com/KazukiOsawa/items/3854eaac63db40146e3c)
+
+### baseline
+
+https://gitlab.aicrowd.com/neural-mmo/ijcai2022-nmmo-baselines
+
+https://gitlab.aicrowd.com/nethack/neurips-2021-the-nethack-challenge

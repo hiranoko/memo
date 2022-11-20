@@ -119,7 +119,9 @@ loss = -m.log_prob(action) * reward
 loss.backward()
 ```
 
-$$ \Delta \theta = \alpha r \frac{\partial \log p(a | \pi^\theta (s))}{\partial \theta} $$
+$$
+\Delta \theta = \alpha r \frac{\partial \log p(a | \pi^\theta (s))}{\partial \theta}
+$$
 
 ここで、$\theta$はパタメータ，$\alpha$は学習率，$r$は報酬，$p(a | \pi^\theta (s))$は行動$a$を取り出す確率を表す。
 
