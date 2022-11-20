@@ -18,6 +18,12 @@ Lasse Espeholt
 
 - データ収集時の方策 $\mu$ は挙動方策、学習している方策 $\pi$ は推定方策と呼ばれる。方策の違いはV-traceで補正している。
 
+- 学習時に発散させないため，$\rho$と$c$のClippingを導入している
+
+$$\rho_i = \min(\bar \rho,\frac{\pi(a_i|x_i)}{\mu(a_i|x_i)})$$
+
+$$c_i = \min(\bar c, \frac{\pi(a_i|x_i)}{\mu(a_i|x_i)})$$
+
 ### [V-trace](https://qiita.com/ku2482/items/c25c33aeae293434912d)
 
 **V-traceオペレータ**
@@ -71,34 +77,34 @@ $$
 
 価値関数の学習には，*V-trace* オペレータにおけるTD誤差を損失関数として用います．
 
-```math
+$$
 L_\theta = (\mathcal R^n V(x_s) - V_\theta(x_s))^2
-```
+$$
 
 勾配は容易に計算可能で，以下の式で表せます．
 
-```math
+$$
 \nabla_\theta L_\theta = (\mathcal R^n V(x_s) - V_\theta(x_s)) \nabla_\theta V_\theta(x_s)
-```
+$$
 
 また，方策勾配定理とISにより，方策 $\pi_{\bar\rho}$ の勾配は以下の式で表せます．
 
-```math
+$$
 E_{a_s\sim \mu}[\frac{\pi_{\bar \rho}(a_s|x_s)}{\mu(a_s|x_s)} \nabla_\omega \log \pi_{\bar \rho}(a_s|x_s) (q_s - b(x_s)) | x_s]
-```
+$$
 
 ここで，$q_s = r_s + \gamma \mathcal R^n V(x_{s+1})$ は *V-trace* オペレータの下での行動価値関数 $Q^{\pi_\omega}(x_s,a_s)$ の推定値を表し，$b(x_s)$ は分散を抑制するための状態依存のベースライン関数を表します．クリッピングよるバイアスが極めて小さい( $\bar \rho$ が十分大きい)場合，上述の勾配は $\pi_{\omega}$ の方策勾配の良い推定値であると考えられます．よって，ベースライン関数に$V_\theta(x_s)$ を用いることで，以下の方策勾配を得ます．
 
-```math
+$$
 \nabla_\omega L_\omega = \rho_s \nabla_\omega \log \pi_\omega(a_s|x_s) (
 r_s + \gamma \mathcal R^n V(x_{s+1}) - V_\theta(x_s))
-```
+$$
 
 また，方策 $\pi_\omega$ が局所解に収束してしまうのを防ぐため，エントロピー損失を加えることも考えられます．
 
-```math
+$$
 L_{\rm ent} = - \sum_a \pi_\omega(a|x_s)\log \pi_\omega(a|x_s)
-```
+$$
 
 ### [torch.distributions](https://pytorch.org/docs/stable/distributions.html)
 
