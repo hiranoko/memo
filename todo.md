@@ -7,7 +7,9 @@
 
 - 単一ネットワークで複数エージェントへの指令
 
-https://github.com/kuto5046/kaggle-luxai/blob/main/exp/exp050/train.py
+[Code](https://github.com/kuto5046/kaggle-luxai/tree/main/exp/exp054)
+
+[Dataset](https://www.kaggle.com/datasets/kuto0633/lux-ai-top-episodes)
 
 - LeanerとTeacherが乖離しないように監視するための損失関数
 
@@ -33,11 +35,16 @@ def compute_teacher_kl_loss(
 
 ### LuxAI
 
-- 1st
-
+- 1st  
 https://github.com/IsaiahPressman/Kaggle_Lux_AI_2021
 
-- 34th
+- 5th  
+https://www.kaggle.com/competitions/lux-ai-2021/discussion/293911
 
-https://github.com/kuto5046/kaggle-luxai
+- 6th  
+https://www.kaggle.com/competitions/lux-ai-2021/discussion/293776
 
+- 34th  
+https://github.com/kuto5046/kaggle-luxai  
+https://www.kaggle.com/c/lux-ai-2021/discussion/294003  
+https://kutohonn.hatenablog.com/entry/2021/12/14/100303
