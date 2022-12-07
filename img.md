@@ -1,13 +1,34 @@
 
 ## 画像処理
 
+### save figure
+
+```python
+buf = io.BytesIO()
+plt.savefig(buf, format='png')
+enc = np.frombuffer(buf.getvalue(), dtype=np.uint8)
+dst = cv2.imdecode(enc, 1)
+```
+
 ### make movie
 
 ```python
+writer = cv2.VideoWriter(
+    'test.mp4',
+    cv2.VideoWriter_fourcc('m', 'p', '4', 'v'),
+    30, 
+    (640, 480)
+) # ライター作成
+
+for frame in frames:
+    writer.write(frame)
+
+writer.release()
 ```
 
 ### 画像生成
-```
+
+```python
 # 1chのブランク画像を生成
 img = np.zeros((height, width), np.uint8)
 
@@ -24,9 +45,9 @@ img = np.zeros((height, width, 4), np.uint8)
 cv2.imwrite("./test.jpg", img)
 ```
 
----
 ### 空画像の生成 
-```
+
+```python
 # 1chのブランク画像を生成
 img = np.zeros((height, width), np.uint8)
 
@@ -43,25 +64,27 @@ img = np.zeros((height, width, 4), np.uint8)
 cv2.imwrite("./test.jpg", img)
 ```
 
----
 ### 画像のリサイズ
-```
+
+```python
 path = "./test.jpg"
 img = cv.imread(path)
 print(img.shape) # 返り値はheight width ch
 img = img.resize(img, (height, width))
 print(img.shape)
 ```
----
+
 ### 色の入れ替え
-```
+
+```python
 img = np.zeros((256, 512, 3), np.uint8)
 black, white = [0, 0, 0], [255, 255, 255]
 img[np.where((img == black).all(axis = 2))] = white
 ```
----
+
 ### 透明画像の生成
-```
+
+```python
 img = np.zeros((256, 512, 3), np.uint8)
 mask = np.zeros((256, 512, 1), np.uint8)
 
@@ -74,9 +97,9 @@ cv2.imwrite("test.png", dst)
 img = cv2.imread("./test.png", -1) # 透明画像を読み込むときの引数は-1
 ```
 
----
 ### CPUコア数をカウント
-```
+
+```python
 import multiprocessing
 multiprocessing.cpu_count()
 ```
@@ -84,7 +107,8 @@ multiprocessing.cpu_count()
 ## utils
 
 ### コマンドライン引数
-```
+
+```pyhton
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--aaa", type=float, default=-1.0)
@@ -94,5 +118,3 @@ def get_args():
     args = parser.parse_args()
     return args
 ```
----
-### 
