@@ -1,6 +1,118 @@
-# Title
+- [TODO](#todo)
+  - [RL](#rl)
+    - [LuxAI](#luxai)
+- [TorchBeast: A PyTorch Platform for Distributed RL](#torchbeast-a-pytorch-platform-for-distributed-rl)
+  - [Author](#author)
+  - [Abstruct](#abstruct)
+  - [Memo](#memo)
+    - [MonoBeastの実装](#monobeastの実装)
+    - [](#)
+    - [baseline](#baseline)
+- [IMPALA: Scalable Distributed Deep-RL with Importance Weighted Actor-Learner Architectures](#impala-scalable-distributed-deep-rl-with-importance-weighted-actor-learner-architectures)
+  - [Author](#author-1)
+  - [Abstruct](#abstruct-1)
+  - [Memo](#memo-1)
+    - [V-trace](#v-trace)
+    - [torch.distributions](#torchdistributions)
+    - [minimalRL](#minimalrl)
 
-IMPALA: Scalable Distributed Deep-RL with Importance Weighted Actor-Learner Architectures
+# TODO
+
+## RL
+
+- データ不均衡の対応
+
+サンプリングの頻度を調整する
+
+- 単一ネットワークで複数エージェントへの指令
+
+[Code](https://github.com/kuto5046/kaggle-luxai/tree/main/exp/exp054)
+
+[Dataset](https://www.kaggle.com/datasets/kuto0633/lux-ai-top-episodes)
+
+- LeanerとTeacherが乖離しないように監視するための損失関数
+
+```python
+def compute_teacher_kl_loss(
+        learner_policy_logits: torch.Tensor,
+        teacher_policy_logits: torch.Tensor,
+        actions_taken_mask: torch.Tensor
+) -> torch.Tensor:
+    learner_policy_log_probs = F.log_softmax(learner_policy_logits, dim=-1)
+    teacher_policy = F.softmax(teacher_policy_logits, dim=-1)
+    kl_div = F.kl_div(
+        learner_policy_log_probs,
+        teacher_policy.detach(),
+        reduction="none",
+        log_target=False
+    ).sum(dim=-1)
+    assert actions_taken_mask.shape == kl_div.shape
+    kl_div_masked = kl_div * actions_taken_mask.float()
+    # Sum over y, x, and action_planes dimensions to combine kl divergences from different actions
+    return kl_div_masked.sum(dim=-1).sum(dim=-1).squeeze(dim=-2)
+```
+
+### LuxAI
+
+- 1st  
+https://github.com/IsaiahPressman/Kaggle_Lux_AI_2021
+
+- 5th  
+https://www.kaggle.com/competitions/lux-ai-2021/discussion/293911
+
+- 6th  
+https://www.kaggle.com/competitions/lux-ai-2021/discussion/293776
+
+- 34th  
+https://github.com/kuto5046/kaggle-luxai  
+https://www.kaggle.com/c/lux-ai-2021/discussion/294003  
+https://kutohonn.hatenablog.com/entry/2021/12/14/100303
+
+
+# TorchBeast: A PyTorch Platform for Distributed RL
+
+## Author
+
+Heinrich Küttler*
+
+## Abstruct
+
+- PyTorchのIMPALA実装
+- 純粋なPython実装（"MonoBeast"）と、マルチマシン対応の高性能版（"PolyBeast"）の両方を提供している
+- 環境はOpenAI Gymインターフェース
+
+## Memo
+
+### MonoBeastの実装
+
+1台のマシンで実行することを想定しており、PyTorchのtensorを共有メモリで保持する機能を活用した実装となっている。  
+
+- *num_buffers*を作成、*rollout buffer*はバッチ次元を除いたものを共有メモリに格納する
+
+> buffers[0]['frame'] = torch.empty(T, *obs_shape, torch.uint8)
+
+- 2つのキューを作成、free_queueとfull_queueはUNIX pipesで通信する
+
+- num_actorsの開始、*actor process*数分のenvironmentを起動する。各アクターはfree_queueからindexをデキューして、ロールアウトデータを含むバッチスライスをbuffers[index]に書き込む。そのとき、indexをfull_queueにエンキューし、次のインデックスをデキューする。
+
+- メインプロセスはいくつかの*learner threads*を持つ
+
+> 1. full_queueからbatch_size-manyのインデックスをdequeue、それらをバッチにスタックしてGPUに移動させて、インデックスをfree_queueに戻す。  
+> 2. バッチをモデルに送り、損失を計算し、バックワードパスを行い、重みをhogwild-updatesする。
+
+共有メモリは大量のデータを保持しており、GPUではなくCPUでアクターのモデル評価を行い、厳密には必要ないテンソルコピーも多数含んでいる。
+
+### 
+
+[hogwild!](https://qiita.com/KazukiOsawa/items/3854eaac63db40146e3c)
+
+### baseline
+
+https://gitlab.aicrowd.com/neural-mmo/ijcai2022-nmmo-baselines
+
+https://gitlab.aicrowd.com/nethack/neurips-2021-the-nethack-challenge
+
+# IMPALA: Scalable Distributed Deep-RL with Importance Weighted Actor-Learner Architectures
 
 ## Author
 
