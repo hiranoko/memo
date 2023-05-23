@@ -25,6 +25,77 @@
 ## Data structures and query processing
 ## Graph algorithms
 
+import numpy as np
+
+def adjacency_matrix_to_list(adj_matrix):
+    num_vertices = len(adj_matrix)
+    adj_list = []
+
+    for vertex in range(num_vertices):
+        neighbors = []
+        for neighbor in range(num_vertices):
+            weight = adj_matrix[vertex, neighbor]
+            if weight != 0:
+                neighbors.append((neighbor, weight))
+        adj_list.append(neighbors)
+
+    return adj_list
+
+# グラフの隣接行列を作成
+adjacency_matrix = np.array([[0, 2, 0, 4, 0],
+                             [2, 0, 1, 0, 0],
+                             [0, 1, 0, 3, 0],
+                             [4, 0, 3, 0, 1],
+                             [0, 0, 0, 1, 0]])
+
+# 隣接行列を隣接リストに変換
+adjacency_list = adjacency_matrix_to_list(adjacency_matrix)
+
+# 変換された隣接リストを表示
+for vertex, neighbors in enumerate(adjacency_list):
+    print(f"頂点 {vertex}: {neighbors}")
+
+
+import numpy as np
+from heapq import heappop, heappush
+
+def dijkstra(graph, start_vertex):
+    num_vertices = len(graph)
+    distances = np.full(num_vertices, np.inf)  # 初期距離を無限大に設定
+    distances[start_vertex] = 0  # 開始頂点の距離を0に設定
+    visited = np.zeros(num_vertices, dtype=bool)  # 訪れた頂点のフラグ
+    queue = [(0, start_vertex)]  # (距離, 頂点) のタプルを格納する優先度キュー
+
+    while queue:
+        current_distance, current_vertex = heappop(queue)  # 距離が最小の頂点を取り出す
+        if visited[current_vertex]:
+            continue
+        visited[current_vertex] = True
+
+        for neighbor, weight in graph[current_vertex]:  # 隣接する頂点と重みを取得
+            if current_distance + weight < distances[neighbor]:
+                distances[neighbor] = current_distance + weight
+                heappush(queue, (distances[neighbor], neighbor))  # 更新された頂点をキューに追加
+
+    return distances
+
+# グラフの隣接リストを作成
+graph = [[(1, 2), (3, 4)],
+         [(0, 2), (2, 1)],
+         [(1, 1), (3, 3)],
+         [(0, 4), (2, 3), (4, 1)],
+         [(3, 1)]]
+
+# ダイクストラ法を実行
+start_vertex = 0
+distances = dijkstra(graph, start_vertex)
+
+# 開始頂点から各頂点への最短距離を表示
+for i in range(len(distances)):
+    if i != start_vertex:
+        print(f"頂点 {i} までの最短距離: {distances[i]}")
+
+
 ## Others
 
 ### Atcoder
