@@ -25,6 +25,69 @@
 ## Data structures and query processing
 ## Graph algorithms
 
+
+'''python
+
+import numpy as np
+from collections import deque
+
+def count_paths(adjacency_matrix):
+    # グラフのサイズを取得
+    num_rows, num_cols = adjacency_matrix.shape
+
+    # 出発点と目的地の座標
+    start = (0, 0)
+    goal = (num_rows - 1, num_cols - 1)
+
+    # 最短経路の数を保持する配列
+    path_counts = np.zeros((num_rows, num_cols), dtype=int)
+
+    # 幅優先探索のためのキューを初期化
+    queue = deque()
+    queue.append(start)
+
+    # スタート地点の最短経路数を初期化
+    path_counts[start] = 1
+
+    # 幅優先探索
+    while queue:
+        current = queue.popleft()
+
+        # ゴールに到達した場合、終了
+        if current == goal:
+            break
+
+        # 上下左右の移動
+        moves = [(0, 1), (0, -1), (1, 0), (-1, 0)]
+        for move in moves:
+            next_pos = (current[0] + move[0], current[1] + move[1])
+
+            # マスが範囲内かつ白いマスである場合
+            if 0 <= next_pos[0] < num_rows and 0 <= next_pos[1] < num_cols and adjacency_matrix[next_pos] == 0:
+                # 未訪問の場合、キューに追加し最短経路数を更新
+                if path_counts[next_pos] == 0:
+                    queue.append(next_pos)
+                    path_counts[next_pos] = path_counts[current]
+
+                # 既に訪問済みの場合、最短経路数を累積して更新
+                else:
+                    path_counts[next_pos] += path_counts[current]
+
+    return path_counts[goal]
+
+# 隣接行列を作成
+adjacency_matrix = np.array([
+    [0, 1, 0, 0],
+    [0, 0, 0, 1],
+    [0, 0, 1, 0],
+    [0, 0, 0, 0]
+])
+
+# 最短経路の数を計算
+result = count_paths(adjacency_matrix)
+print("最短経路の数:", result)
+'''
+
 import numpy as np
 
 def adjacency_matrix_to_list(adj_matrix):
