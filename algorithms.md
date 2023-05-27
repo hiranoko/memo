@@ -25,9 +25,7 @@
 ## Data structures and query processing
 ## Graph algorithms
 
-
-'''python
-
+```python
 import numpy as np
 from collections import deque
 
@@ -86,8 +84,10 @@ adjacency_matrix = np.array([
 # 最短経路の数を計算
 result = count_paths(adjacency_matrix)
 print("最短経路の数:", result)
-'''
 
+```
+
+```python
 import numpy as np
 
 def adjacency_matrix_to_list(adj_matrix):
@@ -117,8 +117,9 @@ adjacency_list = adjacency_matrix_to_list(adjacency_matrix)
 # 変換された隣接リストを表示
 for vertex, neighbors in enumerate(adjacency_list):
     print(f"頂点 {vertex}: {neighbors}")
+```
 
-
+```python
 import numpy as np
 from heapq import heappop, heappush
 
@@ -157,7 +158,7 @@ distances = dijkstra(graph, start_vertex)
 for i in range(len(distances)):
     if i != start_vertex:
         print(f"頂点 {i} までの最短距離: {distances[i]}")
-
+```
 
 ## Others
 
