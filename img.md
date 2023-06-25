@@ -1,4 +1,5 @@
 - [画像処理](#画像処理)
+  - [Template Matching](#template-matching)
   - [save figure](#save-figure)
   - [make movie](#make-movie)
   - [画像生成](#画像生成)
@@ -11,6 +12,28 @@
   - [コマンドライン引数](#コマンドライン引数)
 
 ## 画像処理
+
+### Template Matching
+
+```python
+def calc_CC(template, image):
+    # 平均を引いて正規化
+    cc = F.conv2d(image, template)
+    # 範囲を[0,1]にスケーリング
+    cc = (cc - torch.min(cc)) / (torch.max(cc) - torch.min(cc) + 1e-8)
+    return cc
+
+def calc_NCC(template, image):
+    # テンプレートの大きさの計算
+    template_norm = torch.sqrt(torch.sum(template ** 2))
+    
+    # イメージの各部分の大きさの計算
+    image_patch_norms = torch.sqrt(F.conv2d(image ** 2, torch.ones_like(template)))
+
+    # 畳み込みの実行と正規化
+    ncc = F.conv2d(image, template) / (image_patch_norms * template_norm + 1e-8)
+    return ncc
+```
 
 ### save figure
 
