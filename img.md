@@ -8,8 +8,7 @@
   - [色の入れ替え](#色の入れ替え)
   - [透明画像の生成](#透明画像の生成)
   - [CPUコア数をカウント](#cpuコア数をカウント)
-- [utils](#utils)
-  - [コマンドライン引数](#コマンドライン引数)
+  - [描画](#描画)
 
 ## 画像処理
 
@@ -108,6 +107,31 @@ img = img.resize(img, (height, width))
 print(img.shape)
 ```
 
+```python
+def resize_image(
+    image: np.ndarray,
+    width: Optional[int] = None,
+    height: Optional[int] = None,
+    inter: int = cv2.INTER_AREA,
+) -> np.ndarray:
+    (h, w) = image.shape[:2]
+
+    if width is None and height is None:
+        return image
+
+    if width is None:
+        if height is None:
+            return image
+        else:
+            r = height / float(h)
+            dim = (int(w * r), height)
+    else:
+        r = width / float(w)
+        dim = (width, int(h * r))
+
+    return cv2.resize(image, dim, interpolation=inter)
+```
+
 ### 色の入れ替え
 
 ```python
@@ -138,17 +162,32 @@ import multiprocessing
 multiprocessing.cpu_count()
 ```
 
-## utils
+### 描画
 
-### コマンドライン引数
+```python
+def draw_cross(
+    image: np.array, bboxes: np.array, color: tuple = (255, 0, 0)
+) -> np.array:
+    for bbox in bboxes:
+        x = int((bbox[0] + bbox[2]) / 2)
+        y = int((bbox[1] + bbox[3]) / 2)
+        # バウンディングボックス
+        image = cv2.drawMarker(image, (x, y), color, 0, 40, 3)
+    return image
 
-```pyhton
-def get_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--aaa", type=float, default=-1.0)
-    parser.add_argument("--bbb", type=str, default='sample.png')
-    parser.add_argument("--ccc", type=str, default=None)
-    parser.add_argument('--ddd', action='store_true', default=False, help='')
-    args = parser.parse_args()
-    return args
+def draw_bbox(
+    image: np.array, bboxes: np.array, color: tuple = (255, 0, 0)
+) -> np.array:
+    for bbox in bboxes:
+        x1, y1, x2, y2 = int(bbox[0]), int(bbox[1]), int(bbox[2]), int(bbox[3])
+        # バウンディングボックス
+        image = cv2.rectangle(
+            image,
+            (x1, y1),
+            (x2, y2),
+            color,
+            thickness=2,
+        )
+    return image
 ```
+
