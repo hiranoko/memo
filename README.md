@@ -11,3 +11,5 @@
 [rl](./rl.md)
 
 [utils](./utils.md)
+
+[notebooks](./notebooks.md)
