@@ -164,11 +164,11 @@ for i in range(len(distances)):
 
 ### Atcoder
 
-| Packages | Version |
-|:--------:|:-------:|
-|  Python   |  3.8.2  |
-|  NumPy    |      1.18.2 |
-|  SciPy    |      1.4.1 |
-|  scikit-learn |  0.22.2.post1 |
-|  Numba    |      0.48.0 |
-|  1NetworkX    |   2.4 |
+|   Packages   |   Version    |
+| :----------: | :----------: |
+|    Python    |    3.8.2     |
+|    NumPy     |    1.18.2    |
+|    SciPy     |    1.4.1     |
+| scikit-learn | 0.22.2.post1 |
+|    Numba     |    0.48.0    |
+|  1NetworkX   |     2.4      |
