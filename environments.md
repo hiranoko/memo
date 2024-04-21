@@ -8,6 +8,13 @@ $ sed -i '/prefix:/d' env.yml
 $ conda env create -f env.yml
 ```
 
+## venv
+
+```
+$ python -m venv .venv --system-site-packages
+$ source .venv/bin/activate
+```
+
 ## Micromanba
 
 ```

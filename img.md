@@ -1,4 +1,5 @@
 - [画像処理](#画像処理)
+  - [Video Capture](#video-capture)
   - [Template Matching](#template-matching)
   - [save figure](#save-figure)
   - [make movie](#make-movie)
@@ -14,42 +15,27 @@
 
 ### Video Capture
 
+- cv2.CAP_PROP_FRAME_WIDTH - 幅
+- cv2.CAP_PROP_FRAME_HEIGHT - 高さ
+- cv2.CAP_PROP_FPS - フレームレート
+- cv2.CAP_PROP_FOURCC - コーデック
+- cv2.CAP_PROP_BRIGHTNESS - 明るさ
+- cv2.CAP_PROP_CONTRAST - コントラスト
+- cv2.CAP_PROP_SATURATION - 彩度
+- cv2.CAP_PROP_HUE - 色合い
+
 ```python
-import cv2, queue, threading, time
+cap = cv2.VideoCapture(0)  # カメラを選択
 
-# bufferless VideoCapture
-class VideoCapture:
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)  
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+cap.set(cv2.CAP_PROP_FPS, 30)
 
-  def __init__(self, name):
-    self.cap = cv2.VideoCapture(name)
-    self.q = queue.Queue()
-    t = threading.Thread(target=self._reader)
-    t.daemon = True
-    t.start()
-
-  # read frames as soon as they are available, keeping only most recent one
-  def _reader(self):
-    while True:
-      ret, frame = self.cap.read()
-      if not ret:
-        break
-      if not self.q.empty():
-        try:
-          self.q.get_nowait()   # discard previous (unprocessed) frame
-        except queue.Empty:
-          pass
-      self.q.put(frame)
-
-  def read(self):
-    return self.q.get()
-
-cap = VideoCapture(0)
-while True:
-  time.sleep(.5)   # simulate time between events
-  frame = cap.read()
-  cv2.imshow("frame", frame)
-  if chr(cv2.waitKey(1)&255) == 'q':
-    break
+cap.get(cv2.CAP_PROP_FRAME_WIDTH)  
+cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+cap.get(cv2.CAP_PROP_BUFFERSIZE)
+cap.set(cv2.CAP_PROP_FPS)
 ```
 
 ### Template Matching
@@ -72,6 +58,25 @@ def calc_NCC(template, image):
     # 畳み込みの実行と正規化
     ncc = F.conv2d(image, template) / (image_patch_norms * template_norm + 1e-8)
     return ncc
+
+def pixel_corr(z, x):
+    """Pixel-wise correlation (implementation by for-loop and convolution)
+    The speed is slower because the for-loop
+    
+    https://github1s.com/researchmm/LightTrack/blob/main/lib/models/connect.py#L6-L19
+    
+    """
+    size = z.size()  # (bs, c, hz, wz)
+    CORR = []
+    for i in range(len(x)):
+        ker = z[i:i + 1]  # (1, c, hz, wz)
+        fea = x[i:i + 1]  # (1, c, hx, wx)
+        ker = ker.view(size[1], size[2] * size[3]).transpose(0, 1)  # (hz * wz, c)
+        ker = ker.unsqueeze(2).unsqueeze(3)  # (hz * wz, c, 1, 1)
+        co = F.conv2d(fea, ker.contiguous())  # (1, hz * wz, hx, wx)
+        CORR.append(co)
+    corr = torch.cat(CORR, 0)  # (bs, hz * wz, hx, wx)
+    return corr
 ```
 
 ### save figure
