@@ -236,3 +236,108 @@ def draw_bbox(
     return image
 ```
 
+## calibration
+
+```python
+import bpy
+import math
+import random
+
+# シーンの初期化
+def clear_scene():
+    bpy.ops.object.select_all(action='SELECT')
+    bpy.ops.object.delete()
+
+# チェッカーボードの作成
+def create_checkerboard(rows=7, cols=8, square_size=0.1):
+    collection = bpy.data.collections.new("Checkerboard")
+    bpy.context.scene.collection.children.link(collection)
+    for row in range(rows):
+        for col in range(cols):
+            if (row + col) % 2 == 0:
+                x = col * square_size
+                y = row * square_size
+                bpy.ops.mesh.primitive_plane_add(size=square_size, location=(x, y, 0))
+                square = bpy.context.object
+                square.name = f"Square_{row}_{col}"
+                collection.objects.link(square)
+                bpy.context.scene.collection.objects.unlink(square)
+    return collection
+
+# カメラの設定
+def setup_camera(location=(2, 2, 2), rotation=(math.radians(60), 0, math.radians(45))):
+    bpy.ops.object.camera_add(location=location, rotation=rotation)
+    camera = bpy.context.object
+    camera.name = "CalibrationCamera"
+    camera.data.lens = 35
+    camera.data.sensor_width = 36
+    camera.data.sensor_height = 24
+    return camera
+
+# チェッカーボードの変換
+def transform_checkerboard(collection, move_range=1.0, rotate_range=math.radians(15)):
+    for obj in collection.objects:
+        obj.location.x += random.uniform(-move_range, move_range)
+        obj.location.y += random.uniform(-move_range, move_range)
+        obj.location.z += random.uniform(-move_range, move_range)
+        obj.rotation_euler.x += random.uniform(-rotate_range, rotate_range)
+        obj.rotation_euler.y += random.uniform(-rotate_range, rotate_range)
+        obj.rotation_euler.z += random.uniform(-rotate_range, rotate_range)
+
+# ワールド座標からカメラ座標への変換
+def world_to_camera(camera, world_coords):
+    camera_matrix = camera.matrix_world.inverted()
+    return [camera_matrix @ coord for coord in world_coords]
+
+# カメラ座標から画像座標への変換
+def camera_to_image(camera, camera_coords):
+    lens = camera.data.lens
+    sensor_width = camera.data.sensor_width
+    sensor_height = camera.data.sensor_height
+    resolution_x = bpy.context.scene.render.resolution_x
+    resolution_y = bpy.context.scene.render.resolution_y
+    image_coords = []
+    for coord in camera_coords:
+        if coord.z > 0:
+            x = (lens * coord.x / coord.z + sensor_width / 2) * resolution_x / sensor_width
+            y = (lens * coord.y / coord.z + sensor_height / 2) * resolution_y / sensor_height
+            image_coords.append((x, y))
+        else:
+            image_coords.append(None)
+    return image_coords
+
+# 頂点座標の取得
+def get_checkerboard_vertices(collection):
+    vertices = []
+    for obj in collection.objects:
+        if obj.type == 'MESH':
+            obj_mesh = obj.data
+            for vertex in obj_mesh.vertices:
+                world_coord = obj.matrix_world @ vertex.co
+                vertices.append(world_coord)
+    return vertices
+
+# 画像のレンダリング
+def render_image(filepath="render.png"):
+    bpy.context.scene.render.image_settings.file_format = 'PNG'
+    bpy.context.scene.render.filepath = filepath
+    bpy.ops.render.render(write_still=True)
+
+# メイン処理
+def main():
+    clear_scene()
+    checkerboard = create_checkerboard()
+    camera = setup_camera()
+    transform_checkerboard(checkerboard)
+    world_coords = get_checkerboard_vertices(checkerboard)
+    camera_coords = world_to_camera(camera, world_coords)
+    image_coords = camera_to_image(camera, camera_coords)
+    render_image()
+    print("3Dワールド座標と対応する2D画像座標:")
+    for world, image in zip(world_coords, image_coords):
+        if image:
+            print(f"3D: {world}, 2D: {image}")
+
+if __name__ == "__main__":
+    main()
+```
