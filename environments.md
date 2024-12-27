@@ -46,5 +46,15 @@ mypy_preset = "strict"
 line_length = 88
 py_version = "py38"
 [[tool.pysen.lint.mypy_targets]]
-  paths = ["./src/"]
+  paths = ["./- editable install
 ```
+
+## 編集可能なインストール
+
+自作のライブラリでもvscodeで補完ができるように
+
+```
+pip install -e . --config-settings editable_mode=strict
+```
+
+
