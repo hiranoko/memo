@@ -1,3 +1,5 @@
+[Home](./README.md)
+
 - [TODO](#todo)
   - [RL](#rl)
     - [LuxAI](#luxai)

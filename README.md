@@ -1,3 +1,9 @@
-# memo
+[C++](./cpp.md)
 
-メモ帳
+[FPGA](./fpga.md)
+
+[Jelly](./jelly.md)
+
+[Python](./python.md)
+
+[RL](./rl.md)
