@@ -7,6 +7,7 @@
   - [環境構築](#環境構築)
     - [bootgen](#bootgen)
   - [`xmutil` コマンドのユーティリティ一覧と説明](#xmutil-コマンドのユーティリティ一覧と説明)
+  - [Linux 上から FPGA (PL 部分) を動的にリコンフィギュレーションする流れ](#linux-上から-fpga-pl-部分-を動的にリコンフィギュレーションする流れ)
 
 # KV260
 
@@ -148,6 +149,9 @@ bootgen -image <イメージ設定ファイル>.bif -o <出力ファイル名>.b
 
 - Boot Farmwareの確認方法
 
+QSPIのプライマリブートデバイスに格納されているMFG (製造時) バージョンや日時情報、
+現在どのブートパーティション（A/B）がアクティブになっているかなどのステータスを確認
+
 ```terminal
 $ sudo xmutil bootfw_status
 Image A: Bootable
@@ -158,3 +162,78 @@ XilinxSom_QspiImage_v2.0_07250622
 ImageA Revision Info: XilinxSOM_BootFW_20220725
 ImageB Revision Info: XilinxSOM_BootFW_20220725
 ```
+
+- システム統計情報の取得
+
+```bash
+$ sudo xmutil xlnx_platformstats
+CPU Utilization
+CPU0    :     0.000000%
+CPU1    :     0.000000%
+CPU2    :     0.000000%
+CPU3    :     0.980392%
+
+RAM Utilization
+MemTotal      :     3995884 kB
+MemFree       :     2361656 kB
+MemAvailable  :     3563064 kB
+
+Swap Mem Utilization
+SwapTotal    :    0 kB
+SwapFree     :    0 kB
+
+Power Utilization
+SOM total power                                         :     3100 mW
+SOM total current                                       :     616 mA
+SOM total voltage                                       :     5017 mV
+
+AMS CTRL
+System PLLs voltage measurement, VCC_PSLL               :     1195 mV
+PL internal voltage measurement, VCC_PSBATT             :     718 mV
+Voltage measurement for six DDR I/O PLLs, VCC_PSDDR_PLL :     1799 mV
+VCC_PSINTFP_DDR voltage measurement                     :     844 mV
+
+PS Sysmon
+LPD temperature measurement                             :     30 C
+FPD temperature measurement (REMOTE)                    :     28 C
+VCC PS FPD voltage measurement (supply 2)               :     844 mV
+PS IO Bank 500 voltage measurement (supply 6)           :     1795 mV
+VCC PS GTR voltage                                      :     862 mV
+VTT PS GTR voltage                                      :     1805 mV
+
+PL Sysmon
+PL temperature                                          :     27 C
+
+CMA Mem Utilization
+CmaTotal   :     819200 kB
+CmaFree    :     805716 kB
+
+CPU Frequency
+CPU0    :    1333.333008 MHz
+CPU1    :    1333.333008 MHz
+CPU2    :    1333.333008 MHz
+CPU3    :    1333.333008 MHz
+```
+
+## Linux 上から FPGA (PL 部分) を動的にリコンフィギュレーションする流れ
+
+1. VivadoやVitisでFPGAビットストリームファイル`.bit`を作成
+2. bootgenで`.bit`を`.bin`に変換する。
+  
+`.bif`にファイルのまとめ方を指定する。
+   
+```bif
+  all:
+{
+  kv260_sample.bit
+}
+```
+
+3. デバイスツリーソース (.dts) とコンパイル (.dtbo)
+  
+`.dts` (ソース) をコンパイル (dtc) すると `.dtbo` (オーバレイバイナリ) ができる。
+
+4. configfs を使ってオーバレイを適用
+
+`make load`などを実行すると、`/configfs/device-tree/overlays/...`に
+`.dtbo`を書き込む仕組みを通じて、カーネルが動的にデバイスツリーを合成 → FPGA にビットストリームを反映する。

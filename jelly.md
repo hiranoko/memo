@@ -1,8 +1,7 @@
 [Home](./README.md)
 
 - [kv260\_sample](#kv260_sample)
-  - [KV260のPSからのLチカ](#kv260のpsからのlチカ)
-    - [デバッグ方法](#デバッグ方法)
+- [kv260\_blinking\_led\_ps](#kv260_blinking_led_ps)
 
 # [kv260_sample](https://github.com/hiranoko/jelly/tree/master/projects/kv260/kv260_sample)
 
@@ -52,15 +51,24 @@ AutoIncrementalCheckpointが有効になっている部分は、AutoIncrementalD
 
 </details>
 
-## [KV260のPSからのLチカ](https://zenn.dev/ryuz88/articles/kv260_led_blinking_ps)
+# [kv260_blinking_led_ps](https://zenn.dev/ryuz88/articles/kv260_led_blinking_ps)
 
-### デバッグ方法
+- address mapの表示
+
+Window -> Address Editor
+
+- `devmem2`で操作
 
 ```
 $ sudo devmem2 0xa0000000 # 値を確認
-$ sudo devmem2 0xa0000000 w 0x1  # LEDを点灯
-$ sudo devmem2 0xa0000000 w 0x0  # LEDを消灯
+$ sudo devmem2 0xa0000000 w 0x1  # LEDを点灯 16進数
+$ sudo devmem2 0xa0000000 w 0x0  # LEDを消灯 16進数
 ```
+
+- `c++`から操作
+
+Linuxでは、システム全体の物理メモリ空間にアクセスする特殊デバイスファイルとして`/dev/mem`が用意されてる。
+任意の物理アドレスを`mmap()`することで、そのアドレス領域をユーザ空間から読み書きできる。
 
 <details>
 
@@ -122,3 +130,62 @@ int main()
 ```
 
 </details>
+
+
+- `python`からの操作
+
+
+```python
+#!/usr/bin/env python3
+
+import os
+import mmap
+import time
+
+def main():
+    fd = os.open("/dev/mem", os.O_RDWR | os.O_SYNC)
+    if fd < 0:
+        print("Error: open /dev/mem failed")
+        return 1
+
+    map_size = 0x10000
+    target_addr = 0xA0000000
+
+    try:
+        mem = mmap.mmap(
+            fileno=fd,
+            length=map_size,
+            flags=mmap.MAP_SHARED,
+            prot=mmap.PROT_READ | mmap.PROT_WRITE,
+            offset=target_addr
+        )
+    except ValueError as e:
+        print("Error: mmap failed:", e)
+        os.close(fd)
+        return 1
+
+    try:
+        for i in range(10):
+            current_val = mem[0]  # 先頭バイトを読み取り (0〜255のint)
+            print(f"Address: 0x{target_addr:08X}, Current Value: 0x{current_val:02X}")
+
+            # LSB(下位1ビット) をトグル
+            new_val = current_val ^ 0x01
+            # Python の mmap は単一バイトの書き込み時に int を期待する
+            mem[0] = new_val & 0xFF
+
+            # 書き込み後の値を再度読み出し
+            updated_val = mem[0]
+            print(f"Address: 0x{target_addr:08X}, New Value: 0x{updated_val:02X}")
+
+            time.sleep(0.5)
+    finally:
+        mem.close()
+        os.close(fd)
+
+    return 0
+
+
+if __name__ == "__main__":
+    main()
+```
