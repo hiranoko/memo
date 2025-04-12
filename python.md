@@ -38,6 +38,9 @@ $ conda env export --no-builds > env.yml
 $ sed -i '/prefix:/d' env.yml
 $ conda env create -f env.yml
 $ conda install gdal poppler jsonschema-with-format-nongpl webcolors sqlite -c conda-forge
+$ conda config --remove channels defaults
+$ conda config --add channels conda-forge
+$ conda config --set channel_priority strict
 ```
 
 - venv
