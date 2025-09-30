@@ -2,6 +2,20 @@
 
 # c++
 
+## 構成
+
+```
+project/
+├─ CMakeLists.txt
+├─ include/
+│  └─ project/
+│     └─ model.hpp
+├─ src/
+│  └─ model.cpp
+└─ apps/
+   └─ main.cpp
+```
+
 ## 使いそうなライブラリ
 
 | ヘッダファイル / ライブラリ | 主な内容・機能                                                               |
