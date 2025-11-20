@@ -53,13 +53,17 @@ $ source .venv/bin/activate
 - 自作のライブラリ
 
 ```
-pip install -e . --config-settings editable_mode=strict
+$ pip install --no-build-isolation -v -e .
+```
+
+```
+$ pip install -e . --config-settings editable_mode=strict
 ```
 
 ## Formatter
 
 ```
-pip install "pysen[lint]"
+$ pip install "pysen[lint]"
 ```
 
 ```toml
